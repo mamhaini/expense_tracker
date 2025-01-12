@@ -20,7 +20,7 @@ class SupabaseService:
     # User-related methods
     async def register_user(self, email: str, password: str):
         # Check if the user already exists by email
-        existing_user = self.get_user_by_email(email)
+        existing_user = await self.get_user_by_email(email)
         if existing_user:
             raise ValueError(f"User with email {email} already exists.")
 
@@ -36,7 +36,8 @@ class SupabaseService:
         return await self.client.sign_in(email, password)
 
     async def get_user_by_email(self, email: str):
-        return await self.client.select("users", {"email": email})
+        user = await self.client.select("users", {"email": email})
+        return user[0] if user else None
 
     # Expense-related methods
     async def create_expense(self, user_id: str, amount: float, category: str, description: Optional[str] = None):

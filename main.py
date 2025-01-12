@@ -1,41 +1,36 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from db import SupabaseService
+from fastapi import FastAPI, HTTPException, Depends
+from services.user_service import UserService
+from models import UserCredentials
+from db import supabase
 
 import uvicorn
 
-# Initialize FastAPI app and SupabaseService
+# Initialize FastAPI app and services
 app = FastAPI()
-supabase_service = SupabaseService()
-
-
-class UserAuthenticationRequest(BaseModel):
-    email: str
-    password: str
+user_service = UserService()
 
 
 @app.post("/register")
-async def register(user: UserAuthenticationRequest):
+async def register(user: UserCredentials):
     try:
-        return await supabase_service.register_user(user.email, user.password)
+        return await supabase.register_user(user.email, user.password)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/login")
-async def login(user: UserAuthenticationRequest):
+async def login(user: UserCredentials):
     try:
-        return await supabase_service.login_user(user.email, user.password)
+        return await supabase.login_user(user.email, user.password)
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
 
-@app.post("/user")
-async def get_user(email: str):
-    try:
-        return await supabase_service.get_user_by_email(email)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=str(e))
+@app.get("/users/{email}")
+async def get_user_by_email(email: str, current_user: dict = Depends(user_service.get_current_user)):
+    if current_user["email"] != email:
+        raise HTTPException(status_code=403, detail="Not authorized to view this profile")
+    return current_user
 
 
 if __name__ == "__main__":
