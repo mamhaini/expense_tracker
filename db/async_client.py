@@ -16,11 +16,16 @@ class AsyncSupabaseClient:
         if self.session is None:
             self.session = aiohttp.ClientSession()
 
+    async def _close_session(self):
+        """Close the aiohttp session when no longer needed."""
+        if self.session:
+            await self.session.close()
+            self.session = None
+
     async def _request(self, method: str, endpoint: str, data=None, params=None):
         """
         Generic function to handle HTTP requests.
         """
-        await self._init_session()
         url = endpoint if endpoint.startswith("http") else f"{self.base_url}/{endpoint}"
         async with self.session.request(
                 method, url, headers=self.headers, json=data, params=params
