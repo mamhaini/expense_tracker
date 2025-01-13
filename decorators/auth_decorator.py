@@ -1,9 +1,6 @@
-from services.auth_service import AuthService
+from services import validate_user
 from fastapi import HTTPException
 from functools import wraps
-
-# Initialize AuthService
-auth_service = AuthService()
 
 
 def validate_user_decorator(func):
@@ -15,7 +12,7 @@ def validate_user_decorator(func):
         if not token:
             raise HTTPException(status_code=401, detail="Token is missing")
         try:
-            user_email = auth_service.validate_user(token)
+            user_email = validate_user(token)
             kwargs['user_email'] = user_email
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid token or user not found")
