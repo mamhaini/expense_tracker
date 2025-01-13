@@ -7,7 +7,7 @@ import os
 # Load environment variables
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 
 class SupabaseService:
@@ -41,6 +41,10 @@ class SupabaseService:
         """Create an expense for a user."""
         expense_data = {"user_id": user_id, "amount": amount, "category": category.lower(), "description": description}
         return await self.client.insert("expenses", expense_data)
+
+    async def get_expense_by_id(self, expense_id: str):
+        """Get an expense by its ID."""
+        return await self.client.select("expenses", {"id": expense_id})
 
     async def get_expenses_by_user(self, user_id: str):
         """Get all expenses for a specific user."""

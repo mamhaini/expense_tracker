@@ -50,6 +50,14 @@ async def get_user_by_email(user_email: str, user: dict = Depends(user_service.g
     return user
 
 
+@app.delete("/users/{user_email}", status_code=204)
+async def delete_user(user_email: str, user: dict = Depends(user_service.get_current_user)):
+    """Delete the current user if the email matches."""
+    if user["email"] != user_email:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this profile")
+    await supabase.delete_user(user["id"])
+
+
 # Expense-related endpoints
 @app.post("/expenses", status_code=201)
 async def create_expense(expense: ExpenseCreate, user: dict = Depends(user_service.get_current_user)):
@@ -84,8 +92,18 @@ async def update_expense(expense_id: str, expense: ExpenseUpdate, user: dict = D
 
 
 @app.delete("/expenses/{expense_id}", status_code=204)
-async def delete_expense(expense_id: str):
-    """Delete an expense by its ID."""
+async def delete_expense(expense_id: str, user: dict = Depends(user_service.get_current_user)):
+    """Delete an expense by its ID. The expense should belong to the current user."""
+
+    # Check if the expense exists
+    expense = await supabase.get_expense_by_id(expense_id)
+    if not expense:
+        raise HTTPException(status_code=404, detail="Expense not found")
+
+    # Check if the user is authorized to delete the expense
+    if expense["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this expense")
+
     return await supabase.delete_expense(expense_id)
 
 
