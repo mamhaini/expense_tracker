@@ -3,6 +3,11 @@ from fastapi import HTTPException
 from typing import Tuple, Optional
 from db import supabase
 
+import jwt
+import os
+
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
 
 async def check_category_exists(user: tuple, category_name: str,
                                 raise_exception: bool = True) -> Tuple[Optional[str], Optional[dict]]:
@@ -33,3 +38,15 @@ async def check_expense_authorization(expense_id: str, user: tuple) -> dict:
     if existing_expense["user_id"] != user[0]["id"]:
         raise HTTPException(status_code=403, detail="Not authorized to access this expense")
     return existing_expense
+
+
+def validate_user_by_token(token: str):
+    """Validate the JWT token and return the user's email."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"], options={"verify_aud": False})
+        email = payload.get("email")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+        return email
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")

@@ -1,2 +1,2 @@
-from .utils import check_category_exists, check_expense_authorization
+from .utils import check_category_exists, check_expense_authorization, validate_user_by_token
 from .constants import PREDEFINED_CATEGORIES

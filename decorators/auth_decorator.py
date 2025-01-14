@@ -1,4 +1,4 @@
-from services import validate_user
+from utils import validate_user_by_token
 from fastapi import HTTPException
 from functools import wraps
 
@@ -12,7 +12,7 @@ def validate_user_decorator(func):
         if not token:
             raise HTTPException(status_code=401, detail="Token is missing")
         try:
-            user_email = validate_user(token)
+            user_email = await validate_user_by_token(token)
             kwargs['user_email'] = user_email
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid token or user not found")
