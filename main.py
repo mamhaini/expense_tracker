@@ -1,6 +1,6 @@
-from models import UserCredentials, ExpenseCreate, ExpenseUpdate, CategoryCreate
-from services import CategoryService, ExpenseService, UserService
+from models import UserCredentials, ExpenseCreate, ExpenseUpdate, CategoryCreate, RefreshRequest
 from fastapi import FastAPI, HTTPException, Depends
+from services import User, Expense, Category
 from contextlib import asynccontextmanager
 from typing import List, AsyncIterator
 from db import supabase
@@ -23,24 +23,24 @@ app = FastAPI(lifespan=lifespan)
 @app.post("/register", response_model=dict)
 async def register(user: UserCredentials):
     """Register a new user."""
-    try:
-        return await UserService.register_user(user)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return await User.register(user)
 
 
 @app.post("/login", response_model=dict)
 async def login(user: UserCredentials):
     """Log in an existing user."""
-    try:
-        return await UserService.login_user(user)
-    except Exception as e:
-        raise HTTPException(status_code=401, detail=str(e))
+    return await User.login(user)
+
+
+@app.post("/refresh", response_model=dict)
+async def refresh(request: RefreshRequest):
+    """Refresh the access token using the refresh token."""
+    return await User.refresh(request.refresh_token)
 
 
 @app.get("/users/{user_email}", response_model=dict)
-async def get_user_by_email(user_email: str, user: tuple = Depends(UserService.validate_user)):
-    """Get the profile of the current user if the email matches."""
+async def get_user_by_email(user_email: str, user: tuple = Depends(User.validate)):
+    """Get the profile of the current user if the email matches. Validate already returns the user_data"""
 
     # Check if the user is authorized to view the profile
     if user[0]["email"] != user_email:
@@ -50,64 +50,64 @@ async def get_user_by_email(user_email: str, user: tuple = Depends(UserService.v
 
 
 @app.delete("/users/{user_email}", status_code=204)
-async def delete_user(user_email: str, user: tuple = Depends(UserService.validate_user)):
+async def delete_user(user_email: str, user: tuple = Depends(User.validate)):
     """Delete the current user if the email matches."""
-    await UserService.delete_user(user_email, user[0], user[1])
+    await User.delete(user_email, user[0])
 
 
 # Expense-related endpoints
 @app.post("/expenses", status_code=201, response_model=dict)
-async def create_expense(expense: ExpenseCreate, user: tuple = Depends(UserService.validate_user)) -> dict:
+async def create_expense(expense: ExpenseCreate, user: tuple = Depends(User.validate)) -> dict:
     """Create a new expense for the current user. The category should exist in predefined or user-created categories."""
-    return await ExpenseService.create_expense(user, expense)
+    return await Expense.create(user, expense)
 
 
 @app.get("/expenses/{user_email}", response_model=List[dict])
-async def get_expenses(user_email: str, user: tuple = Depends(UserService.validate_user)):
+async def get_expenses(user_email: str, user: tuple = Depends(User.validate)):
     """Retrieve all expenses for the specified user."""
 
     # Check if the user is authorized to view the expenses
     if user[0]["email"] != user_email:
         raise HTTPException(status_code=403, detail="Not authorized to view this profile")
 
-    return await ExpenseService.get_expenses_by_user(user)
+    return await Expense.get_by_user(user)
 
 
 @app.put("/expenses/{expense_id}", status_code=200, response_model=dict)
-async def update_expense(expense_id: str, expense: ExpenseUpdate, user: tuple = Depends(UserService.validate_user)):
+async def update_expense(expense_id: str, expense: ExpenseUpdate, user: tuple = Depends(User.validate)):
     """Update an existing expense. The category should exist in predefined or user-created categories."""
-    return await ExpenseService.update_expense(expense_id, expense, user)
+    return await Expense.update(expense_id, expense, user)
 
 
 @app.delete("/expenses/{expense_id}", status_code=204)
-async def delete_expense(expense_id: str, user: tuple = Depends(UserService.validate_user)):
+async def delete_expense(expense_id: str, user: tuple = Depends(User.validate)):
     """Delete an expense by its ID. The expense should belong to the current user."""
-    return await ExpenseService.delete_expense(expense_id, user)
+    return await Expense.delete(expense_id, user)
 
 
 # Category-related endpoints
 @app.post("/categories", status_code=201, response_model=dict)
-async def create_category(category: CategoryCreate, user: tuple = Depends(UserService.validate_user)):
+async def create_category(category: CategoryCreate, user: tuple = Depends(User.validate)):
     """Create a new category for the current user. The category name should not exist in predefined or user-created categories"""
-    return await CategoryService.create_category(user, category.name)
+    return await Category.create(user, category.name)
 
 
 @app.get("/categories", response_model=List[dict])
-async def get_all_categories(user: tuple = Depends(UserService.validate_user)):
+async def get_all_categories(user: tuple = Depends(User.validate)):
     """Get all categories, including predefined and user-created ones."""
-    return await CategoryService.get_all_categories(user)
+    return await Category.get_all(user)
 
 
 @app.get("/categories/{category_name}", response_model=dict)
-async def get_category_by_name(category_name: str, user: tuple = Depends(UserService.validate_user)):
+async def get_category_by_name(category_name: str, user: tuple = Depends(User.validate)):
     """Get a category by name from both predefined and user-created categories."""
-    return await CategoryService.get_category_by_name(user, category_name)
+    return await Category.get_by_name(user, category_name)
 
 
 @app.delete("/categories/{category_name}", status_code=204)
-async def delete_category(category_name: str, user: tuple = Depends(UserService.validate_user)):
+async def delete_category(category_name: str, user: tuple = Depends(User.validate)):
     """Delete a category if it's not linked to any expenses. The category should exist in user-created categories."""
-    return await CategoryService.delete_category(user, category_name)
+    return await Category.delete(user, category_name)
 
 
 if __name__ == "__main__":

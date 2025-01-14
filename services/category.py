@@ -4,9 +4,9 @@ from typing import List
 from db import supabase
 
 
-class CategoryService:
+class Category:
     @staticmethod
-    async def create_category(user: tuple, category_name: str) -> dict:
+    async def create(user: tuple, category_name: str) -> dict:
         """Create a new category for the current user."""
         category_type, existing_category = await check_category_exists(user, category_name, raise_exception=False)
         if category_type == "predefined":
@@ -16,17 +16,17 @@ class CategoryService:
         return await supabase.create_user_category(user, category_name)
 
     @staticmethod
-    async def get_all_categories(user: tuple) -> List[dict]:
+    async def get_all(user: tuple) -> List[dict]:
         """Get all categories, including predefined and user-created ones."""
         return PREDEFINED_CATEGORIES + await supabase.get_user_categories(user)
 
     @staticmethod
-    async def get_category_by_name(user: tuple, category_name: str) -> dict:
+    async def get_by_name(user: tuple, category_name: str) -> dict:
         """Get a category by name from both predefined and user-created categories."""
         return (await check_category_exists(user, category_name))[1]
 
     @staticmethod
-    async def delete_category(user: tuple, category_name: str) -> None:
+    async def delete(user: tuple, category_name: str) -> None:
         """Delete a category if it's not linked to any expenses."""
         category_type, category = await check_category_exists(user, category_name)
         if category_type == "predefined":

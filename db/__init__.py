@@ -1,3 +1,2 @@
-from .async_client import AsyncSupabaseClient
-from .supabase_service import supabase
-from .supabase_service import *
+from .async_supabase_client import AsyncSupabaseClient
+from .supabase import supabase

@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from services import UserService
+from services import User
 from main import app
 
 import pytest
@@ -15,7 +15,7 @@ async def mock_validate_user():
 @pytest.fixture(scope="module", autouse=True)
 def setup_and_teardown():
     """Setup and teardown for the test module. Overrides the `validate_user` dependency with a mock."""
-    app.dependency_overrides[UserService.validate_user] = mock_validate_user
+    app.dependency_overrides[User.validate] = mock_validate_user
     with client:
         yield
     app.dependency_overrides = {}

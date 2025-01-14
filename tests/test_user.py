@@ -1,9 +1,9 @@
 from unittest.mock import AsyncMock, patch
 from tests.conftest import client
-from services import UserService
+from services import User
 
 
-@patch.object(UserService, 'register_user', new_callable=AsyncMock)
+@patch.object(User, 'register', new_callable=AsyncMock)
 def test_register_user(mock_register_user):
     mock_register_user.return_value = {"id": "123", "email": "testuser@example.com"}
     response = client.post("/register", json={"email": "testuser@example.com", "password": "password123"})
@@ -12,7 +12,7 @@ def test_register_user(mock_register_user):
     assert response.json()["email"] == "testuser@example.com"
 
 
-@patch.object(UserService, 'login_user', new_callable=AsyncMock)
+@patch.object(User, 'login', new_callable=AsyncMock)
 def test_login_user(mock_login_user):
     mock_login_user.return_value = {"access_token": "fake_token"}
     client.post("/register", json={"email": "testuser@example.com", "password": "password123"})
@@ -21,9 +21,9 @@ def test_login_user(mock_login_user):
     assert "access_token" in response.json()
 
 
-@patch.object(UserService, 'validate_user', new_callable=AsyncMock)
-@patch.object(UserService, 'login_user', new_callable=AsyncMock)
-@patch.object(UserService, 'register_user', new_callable=AsyncMock)
+@patch.object(User, 'validate', new_callable=AsyncMock)
+@patch.object(User, 'login', new_callable=AsyncMock)
+@patch.object(User, 'register', new_callable=AsyncMock)
 def test_get_user_by_email(mock_register_user, mock_login_user, mock_validate_user):
     mock_register_user.return_value = {"id": "123", "email": "testuser@example.com"}
     mock_login_user.return_value = {"access_token": "fake_token"}
@@ -42,8 +42,8 @@ def test_get_user_by_email(mock_register_user, mock_login_user, mock_validate_us
     assert user["email"] == "testuser@example.com"
 
 
-@patch.object(UserService, 'delete_user', new_callable=AsyncMock)
-@patch.object(UserService, 'login_user', new_callable=AsyncMock)
+@patch.object(User, 'delete', new_callable=AsyncMock)
+@patch.object(User, 'login', new_callable=AsyncMock)
 def test_delete_user(mock_login_user, mock_delete_user):
     mock_delete_user.return_value = None
     mock_login_user.return_value = {"access_token": "fake_token"}

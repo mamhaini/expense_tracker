@@ -10,7 +10,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 
-class SupabaseService:
+class Supabase:
     def __init__(self):
         self.client = AsyncSupabaseClient(SUPABASE_URL, SUPABASE_KEY)  # Initialize the Supabase client
 
@@ -31,10 +31,13 @@ class SupabaseService:
         """Log in a user using their email and password."""
         return await self.client.sign_in(email, password)
 
-    async def delete_user(self, user_id: str, user: tuple):
+    async def refresh_token(self, refresh_token: str) -> dict:
+        """Refresh the access token using the refresh token."""
+        return await self.client.refresh_token(refresh_token)
+
+    async def delete_user(self, user_id: str):
         """Delete a user by their ID."""
-        await self.client.delete_user(user_id, user[1])
-        return await self.client.delete("users", {"id": user_id}, user[1])
+        return await self.client.delete_user(user_id)
 
     async def get_user_by_email(self, email: str, token: str) -> Optional[dict]:
         """Retrieve a user by their email."""
@@ -94,4 +97,4 @@ class SupabaseService:
         return await self.client.delete("categories", {"id": category_id}, user[1])
 
 
-supabase = SupabaseService()
+supabase = Supabase()

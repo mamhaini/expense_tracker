@@ -1,10 +1,10 @@
 from models import ExpenseUpdate, ExpenseCreate
 from unittest.mock import AsyncMock, patch
-from services import ExpenseService
 from tests.conftest import client
+from services import Expense
 
 
-@patch.object(ExpenseService, 'create_expense', new_callable=AsyncMock)
+@patch.object(Expense, 'create', new_callable=AsyncMock)
 def test_create_expense(mock_create_expense):
     mock_create_expense.return_value = {"category": "testcategory", "amount": 100.0, "description": "Test Expense"}
 
@@ -22,7 +22,7 @@ def test_create_expense(mock_create_expense):
     )
 
 
-@patch.object(ExpenseService, 'get_expenses_by_user', new_callable=AsyncMock)
+@patch.object(Expense, 'get_by_user', new_callable=AsyncMock)
 def test_get_expenses(mock_get_expenses_by_user):
     mock_get_expenses_by_user.return_value = [
         {"id": 1, "category": "testcategory", "amount": 100.0, "description": "Test Expense"}]
@@ -35,7 +35,7 @@ def test_get_expenses(mock_get_expenses_by_user):
     mock_get_expenses_by_user.assert_called_once_with(({"id": "123", "email": "testuser@example.com"}, "mock_token"))
 
 
-@patch.object(ExpenseService, 'update_expense', new_callable=AsyncMock)
+@patch.object(Expense, 'update', new_callable=AsyncMock)
 def test_update_expense(mock_update_expense):
     mock_update_expense.return_value = {"id": 1, "category": "testcategory", "amount": 150.0,
                                         "description": "Updated Test Expense"}
@@ -54,7 +54,7 @@ def test_update_expense(mock_update_expense):
     )
 
 
-@patch.object(ExpenseService, 'delete_expense', new_callable=AsyncMock)
+@patch.object(Expense, 'delete', new_callable=AsyncMock)
 def test_delete_expense(mock_delete_expense):
     mock_delete_expense.return_value = None
 
