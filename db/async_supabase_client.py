@@ -1,6 +1,7 @@
 from typing import Optional
 
 import aiohttp
+import json
 import os
 
 SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
@@ -38,11 +39,13 @@ class AsyncSupabaseClient:
                 response.raise_for_status()
             except aiohttp.ClientResponseError as e:
                 error_text = await response.text()
+                error_json = json.loads(error_text) if '{"code' in error_text else {}
+
                 raise aiohttp.ClientResponseError(
                     request_info=e.request_info,
                     history=e.history,
                     status=e.status,
-                    message=f"{e.message}: {error_text}",
+                    message=error_json.get('msg') if error_json else error_text,
                     headers=e.headers,
                 )
             content_type = response.headers.get("Content-Type", "")
@@ -55,6 +58,11 @@ class AsyncSupabaseClient:
         """Sign up a new user."""
         data = {"email": email, "password": password}
         return await self._request("POST", "auth/v1/signup", data=data)
+
+    async def send_password_reset_email(self, email: str) -> dict:
+        """Send a password reset email to the user."""
+        data = {"email": email}
+        return await self._request("POST", "auth/v1/recover", data=data)
 
     async def sign_in(self, email: str, password: str) -> dict:
         """Sign in an existing user."""

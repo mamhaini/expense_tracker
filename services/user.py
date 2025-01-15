@@ -28,6 +28,16 @@ class User:
             return await supabase.register_user(user.email, user.password)
         except ClientResponseError as e:
             raise HTTPException(status_code=400, detail=e.message)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=e.args[0])
+
+    @staticmethod
+    async def forgot_password(email: str):
+        """Send a password reset link to the user's email."""
+        try:
+            return await supabase.send_password_reset_email(email)
+        except ClientResponseError as e:
+            raise HTTPException(status_code=400, detail=e.message)
 
     @staticmethod
     async def login(user: UserCredentials):

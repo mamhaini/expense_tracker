@@ -1,5 +1,7 @@
 from pydantic import BaseModel
+from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 
 class ExpenseCreate(BaseModel):
@@ -14,4 +16,10 @@ class ExpenseUpdate(BaseModel):
     description: Optional[str] = None
 
 
-
+class ExpenseResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    amount: float
+    category: str
+    description: Optional[str]
+    created_at: datetime

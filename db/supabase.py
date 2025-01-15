@@ -27,6 +27,10 @@ class Supabase:
         await self.client.insert("users", user_data, SUPABASE_KEY)
         return user_data
 
+    async def send_password_reset_email(self, email: str) -> dict:
+        """Send a password reset email to the user."""
+        return await self.client.send_password_reset_email(email)
+
     async def login_user(self, email: str, password: str) -> dict:
         """Log in a user using their email and password."""
         return await self.client.sign_in(email, password)
