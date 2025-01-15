@@ -12,9 +12,9 @@ def validate_user_decorator(func):
         if not token:
             raise HTTPException(status_code=401, detail="Token is missing")
         try:
-            user_email = validate_user_by_token(token)
+            user_email = await validate_user_by_token(token)
             kwargs['user_email'] = user_email
-        except Exception:
+        except HTTPException:
             raise HTTPException(status_code=401, detail="Invalid token or user not found")
         return await func(*args, **kwargs)
 

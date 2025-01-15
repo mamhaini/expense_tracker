@@ -1,6 +1,7 @@
 from utils.constants import PREDEFINED_CATEGORIES
 from fastapi import HTTPException
 from typing import Tuple, Optional
+from asyncio import sleep
 from db import supabase
 
 import jwt
@@ -40,13 +41,22 @@ async def check_expense_authorization(expense_id: str, user: tuple) -> dict:
     return existing_expense
 
 
-def validate_user_by_token(token: str):
-    """Validate the JWT token and return the user's email."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"], options={"verify_aud": False})
-        email = payload.get("email")
-        if email is None:
+async def validate_user_by_token(token: str, retries: int = 3, delay: int = 1):
+    """
+    Validate the JWT token and return the user's email with exponential backoff.
+
+    This is needed since Supabase needs time to sign the token.
+    """
+    for attempt in range(retries):
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"], options={"verify_aud": False})
+            email = payload.get("email")
+            if email:
+                return email
             raise HTTPException(status_code=401, detail="Could not validate credentials")
-        return email
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+        except jwt.PyJWTError:
+            if attempt < retries - 1:
+                await sleep(delay)
+                delay *= 2
+            else:
+                raise HTTPException(status_code=401, detail="Could not validate credentials")
