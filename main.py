@@ -24,7 +24,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8080", "http://localhost:5000", "http://localhost:5173"],
+    allow_origins=["http://localhost:3000", "http://localhost:8080", "http://localhost:5000", "http://localhost:5173",
+                   "https://expense-tracker-s31f.onrender.com", "https://expense-tracker-ui-j78v.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
