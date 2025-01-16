@@ -9,6 +9,7 @@ from pydantic import EmailStr
 from db import supabase
 
 import uvicorn
+import os
 
 
 # ToDo should probably add mass delete and update endpoints for expenses and categories
@@ -128,4 +129,5 @@ async def delete_category(category_name: str, user: tuple = Depends(User.validat
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
