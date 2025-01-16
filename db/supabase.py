@@ -16,24 +16,27 @@ class Supabase:
 
     # User-related methods
     async def register_user(self, email: str, password: str) -> dict:
-        """Register a new user, creating them in Supabase Auth and the `users` table."""
+        """Register a new user if the user exists."""
         existing_user = await self.get_user_by_email(email, SUPABASE_KEY)
         if existing_user:
             raise ValueError(f"User with email {email} already exists.")
 
-        auth_response = await self.client.sign_up(email, password)
-
-        user_data = {"id": auth_response["id"], "email": email}
-        await self.client.insert("users", user_data, SUPABASE_KEY)
-        return user_data
+        return await self.client.sign_up(email, password)
 
     async def send_password_reset_email(self, email: str) -> dict:
         """Send a password reset email to the user."""
         return await self.client.send_password_reset_email(email)
 
     async def login_user(self, email: str, password: str) -> dict:
-        """Log in a user using their email and password."""
-        return await self.client.sign_in(email, password)
+        """Log in a user using their email and password. Add them to the `users` table if they don't exist."""
+        existing_user = await self.get_user_by_email(email, SUPABASE_KEY)
+        login_response = await self.client.sign_in(email, password)
+
+        user_data = {"id": login_response["user"]["id"], "email": email}
+        if not existing_user:
+            await self.client.insert("users", user_data, SUPABASE_KEY)
+
+        return login_response
 
     async def refresh_token(self, refresh_token: str) -> dict:
         """Refresh the access token using the refresh token."""

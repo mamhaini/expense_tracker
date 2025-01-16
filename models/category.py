@@ -1,11 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 
 class CategoryCreate(BaseModel):
-    name: str
+    name: constr(min_length=1)
 
 
 class CategoryResponse(BaseModel):

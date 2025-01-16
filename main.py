@@ -11,6 +11,7 @@ from db import supabase
 import uvicorn
 
 
+# ToDo should probably add mass delete and update endpoints for expenses and categories
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Function to manage the lifespan of the FastAPI application. Closes DB session when the app is shut down."""

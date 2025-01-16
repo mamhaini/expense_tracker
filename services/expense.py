@@ -1,5 +1,6 @@
 from utils import check_expense_authorization, check_category_exists
 from models import ExpenseUpdate, ExpenseCreate
+from datetime import datetime, timezone
 from typing import List
 from db import supabase
 
@@ -23,6 +24,7 @@ class Expense:
         if expense.category:
             category_exists, _ = await check_category_exists(user, expense.category)
         data = {key: value for key, value in expense.model_dump().items() if value is not None}
+        data["updated_at"] = datetime.now(timezone.utc).isoformat()
         return await supabase.update_expense(expense_id, data, user)
 
     @staticmethod
