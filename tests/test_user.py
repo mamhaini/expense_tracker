@@ -5,7 +5,8 @@ from services import User
 
 @patch.object(User, 'register', new_callable=AsyncMock)
 def test_register_user(mock_register_user):
-    mock_register_user.return_value = {"id": "123", "email": "testuser@example.com"}
+    mock_register_user.return_value = {"id": "b79ab841-9bc5-426c-826e-192110dbada0", "email": "testuser@example.com",
+                                       "created_at": "2025-01-15T17:24:15.541471"}
     response = client.post("/register", json={"email": "testuser@example.com", "password": "password123"})
     assert response.status_code == 200
     assert "id" in response.json()
@@ -25,9 +26,11 @@ def test_login_user(mock_login_user):
 @patch.object(User, 'login', new_callable=AsyncMock)
 @patch.object(User, 'register', new_callable=AsyncMock)
 def test_get_user_by_email(mock_register_user, mock_login_user, mock_validate_user):
-    mock_register_user.return_value = {"id": "123", "email": "testuser@example.com"}
+    mock_register_user.return_value = {"id": "b79ab841-9bc5-426c-826e-192110dbada0", "email": "testuser@example.com",
+                                       "created_at": "2025-01-15T17:24:15.541471"}
     mock_login_user.return_value = {"access_token": "fake_token"}
-    mock_validate_user.return_value = ({"id": "123", "email": "testuser@example.com"}, "mock_token")
+    mock_validate_user.return_value = ({"id": "123", "email": "testuser@example.com",
+                                        "created_at": "2025-01-15T17:24:15.541471"}, "mock_token")
 
     client.post("/register", json={"email": "testuser@example.com", "password": "password123"})
     login_response = client.post("/login", json={"email": "testuser@example.com", "password": "password123"})

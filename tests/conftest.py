@@ -9,7 +9,8 @@ client = TestClient(app)
 
 # Mocked `validate_user` dependency
 async def mock_validate_user():
-    return {"id": "123", "email": "testuser@example.com"}, "mock_token"
+    return {"id": "b79ab841-9bc5-426c-826e-192110dbada0", "email": "testuser@example.com",
+            "created_at": "2025-01-15T17:24:15.541471"}, "mock_token"
 
 
 @pytest.fixture(scope="module", autouse=True)
